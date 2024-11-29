@@ -1,0 +1,118 @@
+# 共通の制約を定義
+anchors:
+  python_constraints: &python_constraints
+    - 'PEP 8スタイルガイドに従うこと'
+    - 'type hintを使用すること'
+    - '非同期処理にはasyncio/aioを使用すること'
+    - 'ユニットテストを作成すること（カバレッジ80%以上）'
+    - 'パフォーマンス最適化（非同期処理、キャッシュなど）を行うこと'
+
+  security_constraints: &security_constraints
+    - 'HTTPS通信を強制すること'
+    - 'OAuth2.0による認証を実装すること'
+    - 'データの暗号化（転送中および保存時）を行うこと'
+    - 'OWASP Top 10に対応すること'
+    - 'Face ID/Touch IDによる生体認証を実装すること'
+
+  next_constraints: &next_constraints
+    - 'Next.js 13以上を使用すること'
+    - 'TypeScriptを使用すること'
+    - 'Server ComponentsとClient Componentsを適切に使い分けること'
+    - 'レスポンシブデザインを実装すること'
+    - 'アニメーションの最適化を行うこと'
+
+rules:
+  # バックエンド規則
+  '^backend/.*\.py$':
+    - *python_constraints
+    - *security_constraints
+    - 'main.py': |
+        FastAPIアプリケーションの初期化
+        Supabase認証の設定
+        複利計算システムの初期化
+        APIルーターの登録
+        エラーハンドリングの実装
+        CORSミドルウェアの設定
+
+    - '^backend/app/api/balance/.*\.py$':
+      - 'router.py': |
+          依存:
+            - services.balance_service
+            - schemas.balance
+            - core.compound_interest
+          エンドポイント:
+            - GET /balance/current
+            - POST /balance/transaction
+            - GET /balance/history
+            - GET /balance/prediction
+          クラス:
+            - BalanceManager:
+                - get_current_balance(user_id: str) -> Balance
+                - add_transaction(transaction: Transaction) -> Balance
+                - get_history(user_id: str, period: Period) -> List[Transaction]
+                - calculate_prediction(balance: Balance, rate: float) -> Prediction
+
+  # フロントエンド規則
+  '^frontend/.*\.(ts|tsx)$':
+    - *next_constraints
+    - 'app/layout.tsx': |
+        依存:
+          - components/Layout
+          - contexts/AuthContext
+          - styles/globals.css
+        機能:
+          - RootLayoutの定義
+          - メタデータの設定
+          - 認証プロバイダーの設定
+
+    - 'app/dashboard/page.tsx': |
+        依存:
+          - components/BalanceDisplay
+          - components/TransactionHistory
+          - components/QuestList
+          - services/api/balance
+        機能:
+          - 残高表示
+          - 取引履歴表示
+          - クエスト一覧表示
+          - Server-side Rendering
+
+    - 'components/BalanceDisplay.tsx': |
+        依存:
+          - services/api/balance
+          - types/Balance
+        機能:
+          - 現在残高の表示
+          - 複利予測の表示
+          - グラフ表示
+          - アラートライン表示
+
+データ連携:
+  backend_to_frontend:
+    - 'balance.ts -> BalanceDisplay.tsx':
+        - 残高データ
+        - 複利予測データ
+    - 'transactions.ts -> TransactionHistory.tsx':
+        - 取引履歴データ
+    - 'quests.ts -> QuestList.tsx':
+        - クエスト一覧データ
+        - 達成状況データ
+
+non_functional_requirements:
+  performance:
+    - '残高計算の最適化（スナップショットシステム）'
+    - 'アニメーション処理の最適化'
+    - 'データベースクエリの効率化'
+  scalability:
+    - '複数アカウント対応'
+    - 'データ量増加への対応'
+    - '将来的な機能拡張への対応'
+  reliability:
+    - 'トランザクションの整合性確保'
+    - 'データバックアップの自動化'
+    - 'エラー時の自動リカバリ'
+  frontend_specific:
+    - 'First Contentful Paint 1.2秒以内'
+    - 'Time to Interactive 1.8秒以内'
+    - 'アニメーションの60FPS維持'
+    - 'Lighthouse スコア95以上'
